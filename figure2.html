@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MHC Genotype Frequencies Under Balancing Selection</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #ffffff;
+    margin: 0;
+    padding: 16px;
+    color: #333;
+  }
+</style>
+</head>
+<body>
+
+<div style="padding: 1rem 0;">
+
+<h2 style="font-size: 16px; font-weight: 500; text-align: center; margin-bottom: 4px; color: #222;">MHC Genotype Frequencies Under Balancing Selection</h2>
+
+<div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-bottom: 16px; font-size: 12px; color: #555;">
+  <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#4a9b8a;display:inline-block;"></span>Heterozygote</span>
+  <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#e07b54;display:inline-block;"></span>Homozygote Common</span>
+  <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#7b8fc4;display:inline-block;"></span>Homozygote Rare</span>
+</div>
+
+<div style="position:relative;width:100%;height:380px;">
+  <canvas id="genoChart"></canvas>
+</div>
+
+<div id="gtooltip" style="position:fixed;display:none;background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px 14px;max-width:290px;font-size:12px;color:#333;line-height:1.5;pointer-events:none;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.08);"></div>
+
+<p style="font-size:11px;color:#777;text-align:center;margin-top:14px;line-height:1.6;">Relative MHC genotype frequencies across three population contexts. Heterozygote advantage — and the broader mechanisms of balancing selection — maintain immune diversity even through severe demographic bottlenecks. Data conceptually drawn from Spurgin &amp; Richardson (2010) and Quintana-Murci (2016). <em>Values are illustrative of documented trends, not raw empirical frequencies.</em></p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const gtooltipEl = document.getElementById('gtooltip');
+
+const tooltips = [
+  [
+    'Heterozygote — High-Pathogen Environment<br><br>Heterozygotes recognize a broader range of pathogen-derived peptides, conferring higher fitness under diverse infectious pressure (Spurgin & Richardson, 2010; Quintana-Murci, 2016).',
+    'Homozygote Common — High-Pathogen Environment<br><br>Common allele homozygotes are more vulnerable as pathogens evolve to overcome the most frequent immune variants first (Spurgin & Richardson, 2010).',
+    'Homozygote Rare — High-Pathogen Environment<br><br>Rare allele homozygotes gain temporary protection but lack the broad peptide-binding range of heterozygotes (Spurgin & Richardson, 2010).'
+  ],
+  [
+    'Heterozygote — Bottlenecked Population<br><br>Even with fewer than 10 founding individuals, MHC heterozygosity remained elevated relative to neutral loci — balancing selection actively counteracted genetic drift (Spurgin & Richardson, 2010).',
+    'Homozygote Common — Bottlenecked Population<br><br>Drift reduces neutral diversity sharply in bottlenecked populations, but balancing selection buffers MHC diversity against the same loss (Spurgin & Richardson, 2010).',
+    'Homozygote Rare — Bottlenecked Population<br><br>Rare allele homozygotes decrease further as bottlenecks eliminate low-frequency variants at neutral loci, but MHC rare alleles are partially protected by selection (Spurgin & Richardson, 2010).'
+  ],
+  [
+    'Heterozygote — Modern Low-Pathogen Environment<br><br>The immune diversity maintained by past selection persists even when the original pathogen pressures have largely disappeared — this retained diversity now contributes to autoimmune disease risk (Quintana-Murci, 2016).',
+    'Homozygote Common — Modern Low-Pathogen Environment<br><br>Without strong directional pathogen pressure, common allele homozygotes are no longer strongly disadvantaged, narrowing the fitness gap between genotypes.',
+    'Homozygote Rare — Modern Low-Pathogen Environment<br><br>In low-pathogen environments, rare allele advantage weakens; allele frequencies become more similar across genotype classes as selection relaxes.'
+  ]
+];
+
+new Chart(document.getElementById('genoChart'), {
+  type: 'bar',
+  data: {
+    labels: ['High-Pathogen Ancestral Environment', 'Bottlenecked Population (e.g. San Nicolas Island Fox)', 'Modern Low-Pathogen Environment'],
+    datasets: [
+      {
+        label: 'Heterozygote',
+        data: [85, 75, 55],
+        backgroundColor: '#4a9b8a',
+        borderRadius: 3,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
+      },
+      {
+        label: 'Homozygote Common',
+        data: [50, 38, 48],
+        backgroundColor: '#e07b54',
+        borderRadius: 3,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
+      },
+      {
+        label: 'Homozygote Rare',
+        data: [30, 20, 40],
+        backgroundColor: '#7b8fc4',
+        borderRadius: 3,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        enabled: false,
+        external: function(context) {
+          const {tooltip} = context;
+          if (tooltip.opacity === 0) {
+            gtooltipEl.style.display = 'none';
+            return;
+          }
+          const dp = tooltip.dataPoints?.[0];
+          if (!dp) return;
+          const datasetIndex = dp.datasetIndex;
+          const index = dp.dataIndex;
+          gtooltipEl.innerHTML = tooltips[index][datasetIndex];
+          gtooltipEl.style.display = 'block';
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: '#666',
+          font: { size: 11 },
+          maxRotation: 0,
+          autoSkip: false
+        },
+        grid: { display: false }
+      },
+      y: {
+        min: 0,
+        max: 100,
+        title: {
+          display: true,
+          text: 'Relative Genotype Frequency (illustrative)',
+          font: { size: 11 },
+          color: '#666'
+        },
+        ticks: { color: '#888', font: { size: 11 } },
+        grid: { color: 'rgba(0,0,0,0.06)' }
+      }
+    }
+  }
+});
+
+document.addEventListener('mousemove', e => {
+  if (gtooltipEl.style.display === 'block') {
+    gtooltipEl.style.left = Math.min(e.clientX + 14, window.innerWidth - 320) + 'px';
+    gtooltipEl.style.top = (e.clientY - 20) + 'px';
+  }
+});
+
+document.addEventListener('mouseleave', () => {
+  gtooltipEl.style.display = 'none';
+});
+</script>
+
+</body>
+</html>
