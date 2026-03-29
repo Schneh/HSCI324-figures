@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pathogen Load vs. Autoimmune Disease Risk</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #ffffff;
+    margin: 0;
+    padding: 16px;
+    color: #333;
+  }
+</style>
+</head>
+<body>
+
+<div style="padding: 1rem 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+
+<h2 style="font-size: 16px; font-weight: 500; text-align: center; margin-bottom: 16px; color: #222;">Pathogen Load vs. Autoimmune Disease Risk</h2>
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; font-size: 12px; color: #555;">
+  <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#c0877a;display:inline-block;"></span>Celiac Disease</span>
+  <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#7aab8a;display:inline-block;"></span>Ulcerative Colitis</span>
+  <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#d4a057;display:inline-block;"></span>Type 1 Diabetes</span>
+  <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#6b8cba;display:inline-block;"></span>Multiple Sclerosis</span>
+  <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#b07060;display:inline-block;"></span>Rheumatoid Arthritis</span>
+  <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#9b8fc0;display:inline-block;"></span>Psoriasis</span>
+</div>
+
+<div style="position:relative;width:100%;height:380px;">
+  <canvas id="pathChart"></canvas>
+</div>
+
+<div id="tooltip" style="position:fixed;display:none;background:#ffffff;border:1px solid #ddd;border-radius:8px;padding:10px 14px;max-width:280px;font-size:12px;color:#333;line-height:1.5;pointer-events:none;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.08);"></div>
+
+<p style="font-size:11px;color:#777;text-align:center;margin-top:14px;line-height:1.6;">Each point represents a disease locus showing both strong pathogen-selection signals and elevated modern autoimmune risk. Data drawn from Fumagalli et al. (2011) and Quintana-Murci (2016). The positive trend reflects the hygiene hypothesis: alleles selected under high infectious burden now contribute to inflammatory disease in low-pathogen environments.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const tooltipEl = document.getElementById('tooltip');
+
+const diseases = [
+  {
+    label: 'Celiac Disease',
+    x: 88, y: 90,
+    color: '#c0877a',
+    tip: '<strong>Celiac Disease — SH2B3, REL</strong><br>Selected under high helminth and bacterial diversity; SH2B3 and REL variants now drive inflammatory overreaction in low-pathogen environments (Fumagalli et al., 2011; Quintana-Murci, 2016).'
+  },
+  {
+    label: 'Ulcerative Colitis',
+    x: 82, y: 85,
+    color: '#7aab8a',
+    tip: '<strong>Ulcerative Colitis — IL10, IFNG</strong><br>IL10 and IFNG variants show strong pathogen-selection signals and are overrepresented among ulcerative colitis susceptibility loci (Fumagalli et al., 2011).'
+  },
+  {
+    label: 'Type 1 Diabetes',
+    x: 70, y: 72,
+    color: '#d4a057',
+    tip: '<strong>Type 1 Diabetes — IL10, SH2B3</strong><br>Variants conferring past infectious disease resistance are now implicated in Type 1 Diabetes susceptibility — consistent with the hygiene hypothesis (Quintana-Murci, 2016).'
+  },
+  {
+    label: 'Multiple Sclerosis',
+    x: 55, y: 58,
+    color: '#6b8cba',
+    tip: '<strong>Multiple Sclerosis — CBLB, FUT8</strong><br>MS susceptibility alleles are disproportionately enriched in T cell-specific regulatory effects, reflecting the cell-type specificity of pathogen-driven immune selection (Raj et al., 2014; Fumagalli et al., 2011).'
+  },
+  {
+    label: 'Rheumatoid Arthritis',
+    x: 48, y: 50,
+    color: '#b07060',
+    tip: '<strong>Rheumatoid Arthritis — FADS1, FADS2</strong><br>FADS1 and FADS2 appear in the rheumatoid arthritis-associated regulatory regions, directly linking dietary adaptation (Case Study 1) and T cell-regulated immune selection (Raj et al., 2014).'
+  },
+  {
+    label: 'Psoriasis',
+    x: 72, y: 65,
+    color: '#9b8fc0',
+    tip: '<strong>Psoriasis — TLR pathway genes</strong><br>Positive selection signals are enriched at genes involved in psoriasis susceptibility; TLR pathway genes central to innate immune detection show strong pathogen-selection signals (Quintana-Murci, 2016).'
+  }
+];
+
+const trendData = [{x:0,y:5},{x:100,y:95}];
+
+new Chart(document.getElementById('pathChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [
+      {
+        label: 'Trend',
+        data: trendData,
+        type: 'line',
+        borderColor: '#2c4a6e',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0,
+        fill: false,
+        order: 2
+      },
+      ...diseases.map(d => ({
+        label: d.label,
+        data: [{x: d.x, y: d.y}],
+        backgroundColor: d.color,
+        pointRadius: 8,
+        pointHoverRadius: 10,
+        order: 1
+      }))
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        enabled: false,
+        external: function(context) {
+          const {chart, tooltip} = context;
+          if (tooltip.opacity === 0) {
+            tooltipEl.style.display = 'none';
+            return;
+          }
+          const datasetIndex = tooltip.dataPoints?.[0]?.datasetIndex;
+          if (datasetIndex === undefined || datasetIndex === 0) {
+            tooltipEl.style.display = 'none';
+            return;
+          }
+          const d = diseases[datasetIndex - 1];
+          tooltipEl.innerHTML = d.tip;
+          tooltipEl.style.display = 'block';
+        }
+      }
+    },
+    scales: {
+      x: {
+        min: 0, max: 100,
+        title: {
+          display: true,
+          text: 'Historical Pathogen Diversity (Ancestral Environment)',
+          font: { size: 12 },
+          color: '#666'
+        },
+        ticks: {
+          callback: v => v === 0 ? 'Low' : v === 100 ? 'High' : '',
+          color: '#888'
+        },
+        grid: { color: 'rgba(0,0,0,0.06)' }
+      },
+      y: {
+        min: 0, max: 100,
+        title: {
+          display: true,
+          text: 'Modern Autoimmune Disease Risk',
+          font: { size: 12 },
+          color: '#666'
+        },
+        ticks: {
+          callback: v => v === 0 ? 'Low' : v === 100 ? 'High' : '',
+          color: '#888'
+        },
+        grid: { color: 'rgba(0,0,0,0.06)' }
+      }
+    }
+  }
+});
+
+document.addEventListener('mousemove', e => {
+  if (tooltipEl.style.display === 'block') {
+    tooltipEl.style.left = Math.min(e.clientX + 14, window.innerWidth - 310) + 'px';
+    tooltipEl.style.top = (e.clientY - 20) + 'px';
+  }
+});
+
+document.addEventListener('mouseleave', () => {
+  tooltipEl.style.display = 'none';
+});
+</script>
+
+</body>
+</html>
