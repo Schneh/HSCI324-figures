@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -16,7 +16,7 @@
 </head>
 <body>
 
-<div style="padding: 1rem 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+<div style="padding: 1rem 0;">
 
 <h2 style="font-size: 16px; font-weight: 500; text-align: center; margin-bottom: 16px; color: #222;">Pathogen Load vs. Autoimmune Disease Risk</h2>
 
@@ -29,7 +29,7 @@
   <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#9b8fc0;display:inline-block;"></span>Psoriasis</span>
 </div>
 
-<div style="position:relative;width:100%;height:380px;">
+<div style="position:relative;width:100%;height:400px;">
   <canvas id="pathChart"></canvas>
 </div>
 
@@ -45,43 +45,41 @@ const tooltipEl = document.getElementById('tooltip');
 const diseases = [
   {
     label: 'Celiac Disease',
-    x: 88, y: 90,
+    x: 90, y: 88,
     color: '#c0877a',
     tip: '<strong>Celiac Disease — SH2B3, REL</strong><br>Selected under high helminth and bacterial diversity; SH2B3 and REL variants now drive inflammatory overreaction in low-pathogen environments (Fumagalli et al., 2011; Quintana-Murci, 2016).'
   },
   {
     label: 'Ulcerative Colitis',
-    x: 82, y: 85,
+    x: 82, y: 83,
     color: '#7aab8a',
     tip: '<strong>Ulcerative Colitis — IL10, IFNG</strong><br>IL10 and IFNG variants show strong pathogen-selection signals and are overrepresented among ulcerative colitis susceptibility loci (Fumagalli et al., 2011).'
   },
   {
     label: 'Type 1 Diabetes',
-    x: 70, y: 72,
+    x: 62, y: 65,
     color: '#d4a057',
     tip: '<strong>Type 1 Diabetes — IL10, SH2B3</strong><br>Variants conferring past infectious disease resistance are now implicated in Type 1 Diabetes susceptibility — consistent with the hygiene hypothesis (Quintana-Murci, 2016).'
   },
   {
     label: 'Multiple Sclerosis',
-    x: 55, y: 58,
+    x: 48, y: 52,
     color: '#6b8cba',
     tip: '<strong>Multiple Sclerosis — CBLB, FUT8</strong><br>MS susceptibility alleles are disproportionately enriched in T cell-specific regulatory effects, reflecting the cell-type specificity of pathogen-driven immune selection (Raj et al., 2014; Fumagalli et al., 2011).'
   },
   {
     label: 'Rheumatoid Arthritis',
-    x: 48, y: 50,
+    x: 35, y: 38,
     color: '#b07060',
     tip: '<strong>Rheumatoid Arthritis — FADS1, FADS2</strong><br>FADS1 and FADS2 appear in the rheumatoid arthritis-associated regulatory regions, directly linking dietary adaptation (Case Study 1) and T cell-regulated immune selection (Raj et al., 2014).'
   },
   {
     label: 'Psoriasis',
-    x: 72, y: 65,
+    x: 72, y: 68,
     color: '#9b8fc0',
     tip: '<strong>Psoriasis — TLR pathway genes</strong><br>Positive selection signals are enriched at genes involved in psoriasis susceptibility; TLR pathway genes central to innate immune detection show strong pathogen-selection signals (Quintana-Murci, 2016).'
   }
 ];
-
-const trendData = [{x:0,y:5},{x:100,y:95}];
 
 new Chart(document.getElementById('pathChart'), {
   type: 'scatter',
@@ -89,7 +87,7 @@ new Chart(document.getElementById('pathChart'), {
     datasets: [
       {
         label: 'Trend',
-        data: trendData,
+        data: [{x:5,y:5},{x:95,y:95}],
         type: 'line',
         borderColor: '#2c4a6e',
         borderWidth: 1.5,
@@ -102,8 +100,8 @@ new Chart(document.getElementById('pathChart'), {
         label: d.label,
         data: [{x: d.x, y: d.y}],
         backgroundColor: d.color,
-        pointRadius: 8,
-        pointHoverRadius: 10,
+        pointRadius: 9,
+        pointHoverRadius: 11,
         order: 1
       }))
     ]
